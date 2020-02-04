@@ -12,6 +12,9 @@
         - [API doc](#api-doc)
         - [Interface(完善数据模型&功能)](#interface%e5%ae%8c%e5%96%84%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%e5%8a%9f%e8%83%bd)
         - [视频管理模块](#%e8%a7%86%e9%a2%91%e7%ae%a1%e7%90%86%e6%a8%a1%e5%9d%97)
+      - [后台管理页面](#%e5%90%8e%e5%8f%b0%e7%ae%a1%e7%90%86%e9%a1%b5%e9%9d%a2)
+        - [Preparation](#preparation)
+        - [Init vue](#init-vue)
   - [Error Log](#error-log)
   - [Package Used](#package-used)
   - [Tips](#tips)
@@ -42,7 +45,7 @@ Core：
 - 优先完成后端api，然后做前端，便于前端获取数据测试
 Output：脑图框架
 
-Todo：
+TODO:
 - 数据库设计
 
 ### 开发环境
@@ -71,6 +74,10 @@ cnpm i -g @nestjs/cli
 ### 开发
 
 #### BackEnd
+TechStack：
+- nestjs 
+- mongoose 
+- typescript
 
 ##### Init
 ```bash  
@@ -252,6 +259,67 @@ nest g mo -p admin episodes
 nest g co -p admin episodes
 ```
 
+导入数据模型，注入管理模块
+
+#### 后台管理页面
+TechStack：
+- vue 
+- Element-UI 
+- typescript
+
+##### Preparation
+
+如果没有安装vue/cli可以执行下面操作
+```bash
+$ cnpm install -g @vue/cli
+```
+[Cli](https://cli.vuejs.org/)
+[@VUE](https://cn.vuejs.org/v2/guide/typescript.html)
+
+##### Init vue 
+
+```bash
+# 项目根目录/%HOME%/
+$ vue create admin
+# 一定要在vue子项目中运行vue相关命令
+$ cd admin
+# 添加element库，fully import/overwirte: NO/
+$ vue add element
+# 添加路由支持,history mode :NO
+$ vue add router
+# ts转换 全部默认执行即可
+$ vue add typescript
+```
+
+- vue中入口文件main 中element.js的引用均改为ts版本
+| import './plugins/element'
+
+- 跑服务
+
+```bash
+# vue的admin目录下
+$ yarn serve
+```
+
+```html
+<script lang='ts'></script>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -361,4 +429,6 @@ swagger接口文档官方包
 ## Reference
 <div id="ref-anchor"></div>
 [1] [第一章：(nestjs)NodeJs+VueJs全栈开发《全栈之巅》视频网站+app+小程序](https://www.bilibili.com/video/av73070499)
-[2] 
+[2] [nestjs](https://nestjs.com/)
+[3] [vuejs](https://cn.vuejs.org/)
+[4] [npmjs](https://www.npmjs.com/)

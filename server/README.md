@@ -47,6 +47,16 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Runing the MicroService
+
+```bash
+# watch mode
+$ nest start -w [packagename]
+# exp
+$ nest start -w admin  
+
+```
+
 ## Test
 
 ```bash
