@@ -1,5 +1,27 @@
 [TOC]
 
+- [FullStackLearn](#fullstacklearn)
+  - [Develop Flowing](#develop-flowing)
+    - [功能分析](#%e5%8a%9f%e8%83%bd%e5%88%86%e6%9e%90)
+    - [开发环境](#%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83)
+    - [开发](#%e5%bc%80%e5%8f%91)
+      - [BackEnd](#backend)
+        - [Init](#init)
+        - [Library(database)](#librarydatabase)
+        - [Interface](#interface)
+        - [API doc](#api-doc)
+        - [Interface(完善数据模型&功能)](#interface%e5%ae%8c%e5%96%84%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%e5%8a%9f%e8%83%bd)
+        - [视频管理模块](#%e8%a7%86%e9%a2%91%e7%ae%a1%e7%90%86%e6%a8%a1%e5%9d%97)
+  - [Error Log](#error-log)
+  - [Package Used](#package-used)
+  - [Tips](#tips)
+    - [VSCode](#vscode)
+      - [Key Blinding](#key-blinding)
+      - [编辑器提示功能](#%e7%bc%96%e8%be%91%e5%99%a8%e6%8f%90%e7%a4%ba%e5%8a%9f%e8%83%bd)
+    - [规范和标准](#%e8%a7%84%e8%8c%83%e5%92%8c%e6%a0%87%e5%87%86)
+      - [命名](#%e5%91%bd%e5%90%8d)
+  - [Reference](#reference)
+
 # FullStackLearn
 
 感谢[全栈之巅](https://github.com/topfullstack/topfullstack)的大佬
@@ -57,6 +79,7 @@ nest new server         //后端项目初始化
 code server             //cd server 如果不在VSC中Terminal执行，则需要cd到对应文件夹下执行generate
 nest generate app amdin //新建子服务，便于实现管理端和客户端的后端
 nest start -w admin     //-w 类似于npm run start:dev 开发模式 带watch监听源码变更
+// TODO:查找其配置命令位置
 ```
 
 Core： 
@@ -112,7 +135,7 @@ yarn add  nestjs-typegoose @typegoose/typegoose mongoose @types/mongoose //mongo
 将user.model数据模型引入Model，再通过下面的Module：TypegooseModule处理后，最后Export出去全局引用
 完成db.module后，便可以在admin中使用了（之前已经将数据库模型DbModule import到app.module中了）
 
-##### 数据模型创建
+##### Interface
 
 - 微服务操作模块
 为了模块化、可读性、解耦，单独将数据库操作部分新建文件
@@ -149,8 +172,85 @@ export class UsersController {
 })
 ```
 
-##### Interface
+##### API doc
+在写接口时就将API文档装饰了，同时也能够做单元测试
+[REF](https://docs.nestjs.com/recipes/swagger)
 
+- 将swaggerAPI导入bootstrap，并添加依赖
+```JS
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+  const options = new DocumentBuilder()
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api-docs', app, document);
+```
+
+- 模块controller加入标签
+
+为了便于API DOC理解；使用装饰器@ApiTags()装饰controller中的类
+如users.controller  注意是服务下的子包user下的
+
+- 数据模型加入标签
+使用装饰器    @ApiProperty({description: '用户名',example:''})
+如user.model  注意是在libs中的数据模型
+
+- 单元测试
+执行一条creat
+从建立数据库配置开始，到目前为止，只有当真正写入数据时，才建立数据！！！！
+
+如果mongodb中无此数据库便新建，但是读取无法新建数据库。
+
+
+##### Interface(完善数据模型&功能)
+- 新增User模型Schema字段
+
+
+##### 视频管理模块
+
+- 数据结构设计
+视频模块主要是管理课程数据模型
+课程又分为课时、课程名称、封面、。。。。。
+
+- 数据模型间建立关系
+课时集合，一种是内嵌课时合集；另一种实现方式是将课时模型独立出来，通过关系数据思维进行关联
+libs/db中course模型下导入episodes数据，再新建episode.model模型
+
+```js
+@arrayProp({ itemsRef: 'Episode' })
+    //一定要定义，才能让nest处理，下面是ts提示用的；最好字符串方式，避免循环引用时，初始化先后顺序导致error
+    episodes: Ref<Episode>[]
+    // 数组数据模型， 类似mysql外键方式，通过Ref泛型关联Episode数据模型 Ref是nest内建的参考类型
+```
+完成course和episode数据模型建立及关联
+
+- 新建课程管理模块courses
+用于课程数据的管理
+
+```bash
+//server路径下
+nest g mo -p admin courses
+nest g co -p admin courses
+```
+
+- 建立course数据模型与控制器和数据库模型的引入关系 
+导入db/course.model模型到courses.controller
+参考上文users.controller的inject注入方式
+将数据模型引入db.module
+```js
+const models = TypegooseModule.forFeature([  User,  Course,  Episode,])
+```
+
+- 建立episodes的crud
+
+```bash
+//server路径下
+nest g mo -p admin episodes
+nest g co -p admin episodes
+```
 
 
 
@@ -184,6 +284,20 @@ export class UsersController {
 - warning: LF will be replaced by CRLF
 | 待办
 [ref](https://blog.csdn.net/wq6ylg08/article/details/88761581)
+
+- Nest can't resolve dependencies of the CoursesController (?). Please make sure that the argument CourseModel at index [0] is available in the CoursesModule context
+
+新建了数据模型，并且在服务也建立了控制器并关联了，但是未将数据模型引入db.module
+
+| const models = TypegooseModule.forFeature([  User,  Course,  Episode,])
+
+
+
+
+
+
+
+
 
 ## Package Used
 - @nestjs/cli
@@ -224,7 +338,23 @@ swagger接口文档官方包
 [More](https://code.visualstudio.com/docs/getstarted/keybindings)
 
 
+#### 编辑器提示功能
 
+- 导入丢失模块：Alt+Enter
+
+
+### 规范和标准
+
+#### 命名
+
+- 数据模型文件（libs/db/src下）一般采用单数，
+- 服务下的模块、控制器文件一般复数
+- 单数命名：类、方法
+- 复数命名：控制器（管理一组、一类数据）
+- 全部小写：变量、常量
+- 驼峰命名：类、
+- 首字母大写：装饰器(通常)，依赖注入
+- 首字母小写：方法、函数
 
 
 
