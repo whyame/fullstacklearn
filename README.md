@@ -12,9 +12,13 @@
         - [API doc](#api-doc)
         - [Interface(完善数据模型&功能)](#interface%e5%ae%8c%e5%96%84%e6%95%b0%e6%8d%ae%e6%a8%a1%e5%9e%8b%e5%8a%9f%e8%83%bd)
         - [视频管理模块](#%e8%a7%86%e9%a2%91%e7%ae%a1%e7%90%86%e6%a8%a1%e5%9d%97)
-      - [后台管理页面](#%e5%90%8e%e5%8f%b0%e7%ae%a1%e7%90%86%e9%a1%b5%e9%9d%a2)
+      - [FrontEnd](#frontend)
         - [Preparation](#preparation)
         - [Init vue](#init-vue)
+        - [搭建前端主页面](#%e6%90%ad%e5%bb%ba%e5%89%8d%e7%ab%af%e4%b8%bb%e9%a1%b5%e9%9d%a2)
+        - [课程页面](#%e8%af%be%e7%a8%8b%e9%a1%b5%e9%9d%a2)
+        - [编辑课程页面](#%e7%bc%96%e8%be%91%e8%af%be%e7%a8%8b%e9%a1%b5%e9%9d%a2)
+        - [使用AVUE 改造CRUD](#%e4%bd%bf%e7%94%a8avue-%e6%94%b9%e9%80%a0crud)
   - [Error Log](#error-log)
   - [Package Used](#package-used)
   - [Tips](#tips)
@@ -23,6 +27,9 @@
       - [编辑器提示功能](#%e7%bc%96%e8%be%91%e5%99%a8%e6%8f%90%e7%a4%ba%e5%8a%9f%e8%83%bd)
     - [规范和标准](#%e8%a7%84%e8%8c%83%e5%92%8c%e6%a0%87%e5%87%86)
       - [命名](#%e5%91%bd%e5%90%8d)
+    - [TypeScript](#typescript)
+    - [Syntax](#syntax)
+    - [建议](#%e5%bb%ba%e8%ae%ae)
   - [Reference](#reference)
 
 # FullStackLearn
@@ -261,7 +268,8 @@ nest g co -p admin episodes
 
 导入数据模型，注入管理模块
 
-#### 后台管理页面
+#### FrontEnd
+后台管理页面
 TechStack：
 - vue 
 - Element-UI 
@@ -301,15 +309,284 @@ $ vue add typescript
 $ yarn serve
 ```
 
+html、vue下的ts使用方式
 ```html
 <script lang='ts'></script>
 ```
 
+##### 搭建前端主页面
+
+原型：左侧侧边栏、顶部路由栏
+
+- 清理主页面
+在App.vue将布局更换为 <router-view></router-view>
+删除不需要的组件helloworld
+删除自带的样式
+
+删除后就显示的home的组件内容，因为index.ts主页路由用的时home组件
+
+- 建立主要布局文件Main.vue
+
+| vscode 插件 Element UI Snippets 可以快速导入element模块
+| 如elcon 快速新建element 容器
+
+- 填写element容器的内容
 
 
+- index.ts路由文件引入Main.vue
+
+- 为routes添加类型提示
+| 查看需要提示的部分是什么类型的，然后再到需要提示处使用ts：注明类型即可！
+
+- Main.vue导出Main组件
+
+- 侧边栏完善
+  在<el-aside width="200px">标签下
+  elmen
+
+  default-active="$route.path"    高亮选择路由
+
+数据写到文件下的script中，不要写死到html中，有利于动态数据及权限管理
+
+**一定要好好理解这个菜单编写的逻辑**
+
+```html
+<el-container>
+    <el-aside width="200px">
+      <!-- Aside content -->
+      <el-menu mode="vertical" :default-active="$route.path" router>
+        <!-- 二级菜单在menu的items中循环，menu在底部ts中定义 -->
+        <el-submenu
+          v-for="(item, index) in menu.items"
+          :index="index + 1"
+          这里的不冲突命名是个什么道理？标签里面如何注释？
+          :key="`menu-item-${index}`"
+        >
+          <template slot="title">{{item.title}}</template>
+          <el-menu-item
+            v-for="(subItem, subIndex) in item.items"
+            :index="subItem.path"
+            :key="`menu-item-${index}-${subIndex}`"
+          >{{subItem.title}}</el-menu-item>
+        </el-submenu>
+      </el-menu>
+    </el-aside>
+    <el-container>
+
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+
+@Component({})
+// @Component标记导出类Main是一个vue组件
+export default class Main extends Vue {
+  menu = {
+    items: [
+      {
+        title: "内容管理",
+        items: [
+          { title: "首页", path: "/" },
+          { title: "课程管理", path: "/courses/list" },
+          { title: "课程管理", path: "/courses/list" }
+        ]
+      },
+      {
+        title: "用户管理",
+        items: [{ title: "课程管理", path: "/users/list" }]
+      }
+    ]
+  };
+  // 数据写到下面来，不要写死到html中，有利于动态数据及权限管理
+}
+</script>
+```
+[课程查看6P 12:00](https://www.bilibili.com/video/av73070499?p=6)
 
 
+##### 课程页面
 
+- views下新增courses文件夹便于统一管理
+- 新建CourseList.vue
+
+通过vetur插件提供的Snippet功能
+vue简写快速构建框架
+
+- 在index.ts中引入CourseList到子路由
+```js
+    { name: 'courses-list', path: '/courses/list', component: CourseList }
+```
+
+- 使用axios建立前后端数据连接
+比fetch简便
+```bash
+yarn add axios @types/axios
+```
+- 将axios引入main.ts
+通过axios与后台API对接
+```ts
+Vue.prototype.$http = Axios.create({
+  baseURL: 'http://loalhost:3000'
+})
+```
+
+- CourseList.vue数据操作功能
+
+[课程查看7P 5:30](https://www.bilibili.com/video/av73070499?p=7)
+
+```ts
+  // 基于axios异步获取数据
+  async fetch() {
+    const res = await this.$http.get("courses");
+    this.data = res.data;
+  }
+```
+
+- 将vue中获取的数据展示到前台
+
+使用elta快捷生成element table
+
+
+[7P 14:00]
+v-for传递两个值(field,name)
+因为需要用唯一值name定义Key
+
+组件中添加添加字段属性的label（中文标签）
+
+
+##### 编辑课程页面
+
+- 创建CourseEdit.vue
+
+- 建立路由
+router/index.ts
+```ts
+      // 接受参数路由,并将页面获取到的id参数传递给组件
+      { name: 'courses-edit', path: '/courses/edit/:id', component: CourseEdit, props: true },
+      { name: 'courses-create', path: '/courses/create', component: CourseEdit }
+```
+
+- Main.vue
+  由于创建和编辑页面均使用的是CourseEdit组件，可能会出现误认为同一页面不更新数据的情况，通过更改键值调整
+```html
+          <router-view :key="$route.path"></router-view>
+        <!-- router-view子路由容器 基于当前路由路径来更新页面-->
+```
+
+- 计算属性区分页面
+  
+```html
+  三元运算符
+  {{isNew ? '创建': '编辑'}} 
+```
+```ts
+  //计算属性，用于区分编辑页面和创建页面,ES的特性，get将函数、方法当作属性来用！
+  get isNew() {
+    return !this.id;
+  }
+```
+
+- vue-ele-form
+```bash
+$ yarn add vue-ele-form
+```
+
+- 自定义类型申明文件.d.ts
+需要重启服务！
+[8P 5:30]
+
+- ele-form使用表单
+```html
+    <el-table :data="data.data" border stripe>
+      <el-table-column
+        v-for="(field,name) in fields"
+        :prop="name"
+        :key="name"
+        :label="field.label"
+        :width="field.width"
+      ></el-table-column>
+    </el-table>
+```
+
+
+- 数据数据提交
+[9P 00:00]
+```ts
+  // 用于表单提交数据,data数据理应做class数据类限定，但是大佬还没做，我也不清楚
+  async submit(data: any){
+
+    this.data= {}
+    //提交后数据需要清空，安全问题
+    // global.console.log(data) 全局console检测表单提交功能
+    await this.$http.post('courses',data)
+    // 需要查看API接口文档API-DOC的课程提交，使用的post方法，传递了data数据？
+    this.$message.success('保存成功')
+    //提交成功后，提示页面，并返回上一个页面
+    this.$router.go(-1)
+  }
+```
+TODO:弹幕又看到说用try catch，不太懂，好像实际业务有需要用到
+
+[9P 3:23]
+- 编辑页面按键
+
+用ELTAC Snippet构建表格
+创建template，因为要用按键，可能时vue需要注明区域渲染吧。。
+ELB创建按键区域
+
+[9P 4:00]
+- 设定按键跳转路由！"$router.push(`/courses/edit/${row._id}`
+TODO: 解构的理解；有关scope作用域的写法和理解
+
+[v-slot](https://cn.vuejs.org/v2/api/#v-slot)
+
+```ts
+      <el-table-column label=" 操作 " :width="200">
+        <template v-slot="{row}">
+          <el-button type="success" size="small" @click="$router.push(`/courses/edit/${row._id}`)">编辑</el-button>
+        </template>
+      </el-table-column>
+```
+
+[9P 7:00]
+- 编辑页面与create页面获取数据逻辑的预处理
+
+```ts
+  // 基于axios异步获取数据
+  async fetch() {
+    const res = await this.$http.get(`courses/${this.id}`);
+    this.data = res.data;
+  }
+  // 用于表单提交数据,data数据理应做class数据类限定，但是大佬还没做，我也不清楚
+  async submit(data: any) {
+    // global.console.log(data) 全局console检测表单提交功能
+    // 通过判定路径来确定功能
+    const url = this.isNew ? `courses` : `courses/${this.id}`;
+    const method = this.isNew ? "post" : "put";
+    //无法直接调用method，获取对象的某一个方法的变量需要用[]
+    await this.$http[method](url, data);
+    // 需要查看API接口文档API-DOC的课程提交，使用的post方法，传递了data数据？
+    this.$message.success("保存成功");
+    //提交成功后，提示页面，并返回上一个页面
+    this.data = {};
+    //提交后数据需要清空，安全问题
+    this.$router.go(-1);
+  }
+  created() {
+    // 如果时编辑时，进入这个页面（组件）时，需要获取当前id，所以需要fetch。通过判断是否是新纪录去执行
+    !this.isNew && this.fetch();
+  }
+```
+
+List页面使用了try catch的方式处理报错
+
+[10P 4:26]
+
+- 建立创建按钮
+ 
+
+
+##### 使用AVUE 改造CRUD
+
+$ npm i @smallwei/avue -S
 
 
 
@@ -360,8 +637,41 @@ $ yarn serve
 | const models = TypegooseModule.forFeature([  User,  Course,  Episode,])
 
 
+- XMLHttpRequest CORS跨域问题
+
+我没有报错，但是记录一下
+在服务端admin子包main.ts中添加
+| app.enableCors()
 
 
+
+- Provisional headers are shown
+axios与后端建立连接的时候报错。。。
+
+经过多次排查，看了跨域、浏览器插件问题说、请求时间差、缓存问题。。。都试了
+最终在请求体XHR中发现。。。原来路径错了！！！localhost写错了。。。。
+可以看出Typescript的优势了。。
+
+
+
+- type check failed for prop "index"
+Expected String with value "1", got Number with value 1
+index 属性获取的类型不匹配
+| 通过强制类型转换传递字符串`menu-item-${index}`
+
+
+
+- @Prop(String) id:string
+
+TODO:从router中获取传递的id,mongodb中id是字符串类型 为何大小写区别报错？
+
+奇怪，为何跑起来id报错，但是页面显示、编辑器均没有提示错误呢？
+14:17 Property 'id' has no initializer and is not definitely assigned in the constructor.
+    12 |   // 属性写入属于ts的功能
+    13 |   // 从router中获取传递的id,mongodb中id是字符串类型 为何大小写区别报错？
+  > 14 |   @Prop(String) id: string;
+
+| 通过加!提示编译器值不为空。 @Prop(String) id!: string;
 
 
 
@@ -383,10 +693,14 @@ $ yarn serve
 swagger接口文档官方包
 - swagger-ui-express
 基于express的第三方包
-- 
-- 
-- 
-- 
+- axios
+
+- @types/axios
+vsc类型提示
+- vue-ele-form
+vue element动态表单插件
+- @smallwei/avue
+前端数据可视化组件
 - 
 - 
 - 
@@ -424,6 +738,75 @@ swagger接口文档官方包
 - 首字母大写：装饰器(通常)，依赖注入
 - 首字母小写：方法、函数
 
+- xxx.d.ts：一般用于ts类型定义
+
+
+
+### TypeScript
+
+- 类型提示的方式
+  在vue还未完全支持ts的情况下，许多地方需要手动添加类型支持
+  添加方法和思路就是：查看需要提示的部分是什么类型的，然后再到需要提示处使用ts：注明类型即可！
+  如routes的属性没有提示，可以查看实例化的routes是什么类型，然后再代码标记
+
+```ts
+const routes: RouteConfig[] = [
+  {
+    path: '/',
+    component: Main,
+    // children子路由
+    children: [
+      { name: 'home', path: '/', component: Home }
+    ]
+  },
+]
+
+const router = new VueRouter({
+  routes
+})
+```
+
+这个方法真的太优秀了。[课程查看 6P 9:10](https://www.bilibili.com/video/av73070499?p=6)
+
+
+- .d.ts文件添加类型提示
+
+[课程查看7P 8:10](https://www.bilibili.com/video/av73070499?p=7)
+
+./admin/src/index.d.ts
+```ts
+import { AxiosInstance } from "axios";
+
+declare module 'vue/types/vue' {
+    // 3. 声明为 Vue 补充的东西
+    interface Vue {
+        $http: AxiosInstance
+    }
+}
+```
+注意添加类型定义文件后需要重启vscode
+
+**注意要重启服务！！**
+vue-ele-form都是因为没有重启服务导致报错
+
+
+### Syntax
+
+{}  对象
+[]  数组
+``  带计算属性的字符串
+|     const res = await this.$http.get(`courses/${this.id}`);
+=>  返回相当于函数内的return
+
+&&  只要“&&”前面是false，无论“&&”后面是true还是false，结果都将返“&&”前面的值;只要“&&”前面是true，结果都将返“&&”后面的值
+| !this.isNew && this.fetch(); 
+
+### 建议
+
+- 调试浏览器建议chrome
+  
+同样的服务，在edge上报304错误。chrome没问题
+
 
 
 ## Reference
@@ -432,3 +815,6 @@ swagger接口文档官方包
 [2] [nestjs](https://nestjs.com/)
 [3] [vuejs](https://cn.vuejs.org/)
 [4] [npmjs](https://www.npmjs.com/)
+[4] [avuejs](https://avuejs.com/doc/crud/crud-doc)
+[5] [element](https://element.eleme.cn/#/zh-CN)
+
