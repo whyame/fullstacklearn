@@ -20,6 +20,7 @@
         - [编辑课程页面](#%e7%bc%96%e8%be%91%e8%af%be%e7%a8%8b%e9%a1%b5%e9%9d%a2)
         - [使用AVUE 改造CRUD](#%e4%bd%bf%e7%94%a8avue-%e6%94%b9%e9%80%a0crud)
   - [Error Log](#error-log)
+        - [更灵活拓展性的crud](#%e6%9b%b4%e7%81%b5%e6%b4%bb%e6%8b%93%e5%b1%95%e6%80%a7%e7%9a%84crud)
   - [Package Used](#package-used)
   - [Tips](#tips)
     - [VSCode](#vscode)
@@ -37,6 +38,7 @@
 感谢[全栈之巅](https://github.com/topfullstack/topfullstack)的大佬
 
 终于有时间来学习了，哈哈
+2020年2月6日要开始忙了，可能暂时不会更新了
 
 ## Develop Flowing
 
@@ -586,15 +588,31 @@ List页面使用了try catch的方式处理报错
 
 ##### 使用AVUE 改造CRUD
 
+- 安装包
+```bash
 $ npm i @smallwei/avue -S
+```
+- 类似element的plugin引入
+新建/plugin/avue.js
+- main.ts引入调整
+- 路由index.ts调整
+- [AVUECRUD](https://avuejs.com/doc/crud/crud)
+- 执行逻辑
+  通过fetch获取data数据，再this.data赋值到本域，最后template里才能有效调用
+
+- AVUE接口请求
+
+- 事件监听
+  [row-save](https://avuejs.com/doc/crud/crud-doc)
 
 
+[12P 6:17]
 
-
-
-
-
-
+```ts
+    // 对象的复制，stringify先将row转换成json字符串格式，再parse转换成对象格式
+    const data = JSON.parse(JSON.stringify(row))
+    delete data.$index
+```
 
 
 
@@ -672,6 +690,18 @@ TODO:从router中获取传递的id,mongodb中id是字符串类型 为何大小�
   > 14 |   @Prop(String) id: string;
 
 | 通过加!提示编译器值不为空。 @Prop(String) id!: string;
+
+
+- $index. Expected an object
+
+由于使用avue，将数据加了一行$index，导致服务端请求500错误
+| 删除多余字段 ,注意数据转换
+[12P 4:30](https://www.bilibili.com/video/av73070499?p=12)
+
+
+##### 更灵活拓展性的crud
+
+
 
 
 
@@ -800,6 +830,12 @@ vue-ele-form都是因为没有重启服务导致报错
 
 &&  只要“&&”前面是false，无论“&&”后面是true还是false，结果都将返“&&”前面的值;只要“&&”前面是true，结果都将返“&&”后面的值
 | !this.isNew && this.fetch(); 
+
+:   v-blnd 数据绑定简写
+@   在vue标签中的意思v-on 事件简写
+
+
+
 
 ### 建议
 
